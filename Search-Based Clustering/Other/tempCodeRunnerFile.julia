@@ -1,0 +1,116 @@
+import numpy as np
+import matplotlib.pyplot as plt
+
+# Function to calculate mean squared error
+def calculate_mean_squared_error(solution, data):
+    predicted_values = solution[0] * data[:, 0] + solution[1]
+    return np.mean((data[:, 1] - predicted_values)**2)
+
+# GLA algorithm
+def global_learning_algorithm(S, T, Pt, v, M, T0, alpha, data):
+    # Initialize solution variables
+    C_init = np.random.rand(2)  # Initial solution [slope, intercept]
+    C_curr = C_best = C_init
+
+    # Initialize counters
+    Count = np.zeros(2)
+
+    # Initial temperature
+    Tn = T0
+
+    # Number of iterations
+    iterations = 0
+
+    while iterations < M:
+        # Step 2: Generate Test Solutions
+        for _ in range(S):
+            # Generate test solution C_i by perturbing the current best solution C_curr
+            C_i = C_curr + np.random.uniform(-Pt, Pt, 2)
+
+            # Update Counters
+            for q in range(2):
+                if C_i[q] != C_curr[q]:
+                    Count[q] += 1
+                    if Count[q] == v:
+                        Count[q] = 0
+
+            # Step 3: Calculate Mean Squared Error
+            error_C_i = calculate_mean_squared_error(C_i, data)
+
+            # Step 4: Update Current Solution
+            if calculate_mean_squared_error(C_best, data) > error_C_i:
+                C_curr = C_i
+
+        # Step 5: Simulated Annealing
+        delta_D = calculate_mean_squared_error(C_curr, data) - calculate_mean_squared_error(C_i, data)
+        Tn = T0 * alpha ** iterations
+        gamma = np.random.rand()
+        if gamma < np.exp(delta_D / Tn):
+            C_curr = C_i
+
+        # Step 6: Update Best Solution and Termination Check
+        if calculate_mean_squared_error(C_best, data) == calculate_mean_squared_error(C_curr, data):
+            C_curr = C_best
+            Count = np.zeros(2)
+            if calculate_mean_squared_error(C_best, data) > calculate_mean_squared_error(C_curr, data):
+                C_best = C_curr
+
+        # Increment iterations
+        iterations += 1
+
+    return C_best
+
+# Visualize the clusters
+def visualize_clusters(data, solution):
+    plt.scatter(data[:, 0], data[:, 1], label='Data')
+    x_vals = np.linspace(min(data[:, 0]), max(data[:, 0]), 100)
+    y_vals = solution[0] * x_vals + solution[1]
+    plt.plot(x_vals, y_vals, color='red', label='Regression Line')
+    plt.title('Global Learning Algorithm - Regression Line')
+    plt.xlabel('X1')
+    plt.ylabel('X2')
+    plt.legend()
+    plt.show()
+    
+cluster1_num_samples = 20
+cluster1_x1_start = 0
+cluster1_x1_end = 5
+cluster1_x2_start = 2
+cluster1_x2_end = 6
+cluster1_x1 = np.random.random(size=(cluster1_num_samples))
+cluster1_x1 = cluster1_x1 * (cluster1_x1_end - cluster1_x1_start) + cluster1_x1_start
+cluster1_x2 = np.random.random(size=(cluster1_num_samples))
+cluster1_x2 = cluster1_x2 * (cluster1_x2_end - cluster1_x2_start) + cluster1_x2_start
+
+cluster2_num_samples = 20
+cluster2_x1_start = 4
+cluster2_x1_end = 12
+cluster2_x2_start = 14
+cluster2_x2_end = 18
+cluster2_x1 = np.random.random(size=(cluster2_num_samples))
+cluster2_x1 = cluster2_x1 * (cluster2_x1_end - cluster2_x1_start) + cluster2_x1_start
+cluster2_x2 = np.random.random(size=(cluster2_num_samples))
+cluster2_x2 = cluster2_x2 * (cluster2_x2_end - cluster2_x2_start) + cluster2_x2_start
+
+cluster3_num_samples = 20
+cluster3_x1_start = 12
+cluster3_x1_end = 18
+cluster3_x2_start = 8
+cluster3_x2_end = 11
+cluster3_x1 = np.random.random(size=(cluster3_num_samples))
+cluster3_x1 = cluster3_x1 * (cluster3_x1_end - cluster3_x1_start) + cluster3_x1_start
+cluster3_x2 = np.random.random(size=(cluster3_num_samples))
+cluster3_x2 = cluster3_x2 * (cluster3_x2_end - cluster3_x2_start) + cluster3_x2_start
+
+c1 = np.array([cluster1_x1, cluster1_x2]).T
+c2 = np.array([cluster2_x1, cluster2_x2]).T
+c3 = np.array([cluster3_x1, cluster3_x2]).T
+
+# Combine data for clustering
+data = np.vstack([c1, c2, c3])
+
+# Run the algorithm
+best_solution = global_learning_algorithm(S=20, T=2, Pt=0.001, v=3, M=30, T0=500, alpha=0.99, data=data)
+
+# Visualize the result
+visualize_clusters(data, best_solution)
