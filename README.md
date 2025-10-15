@@ -54,6 +54,3 @@ Experiments were conducted on standard benchmark datasets:
 - Wine Recognition
 
 ---
-
-## 🧩 Repository Structure
-
