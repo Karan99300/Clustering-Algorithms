@@ -1,9 +1,9 @@
 import torch
 import torch.nn as nn
 
-class Autoencoder(nn.Module):
+class AutoEncoder(nn.Module):
     def __init__(self, inputs_dim, n_bottleneck):
-        super(Autoencoder, self).__init__()
+        super(AutoEncoder, self).__init__()
         self.encoder = nn.Sequential(
             nn.Linear(inputs_dim, 1024),
             nn.ReLU(),
